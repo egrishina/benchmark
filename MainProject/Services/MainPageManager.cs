@@ -24,12 +24,7 @@ namespace MainProject.Services
 
         public static bool IsForMainPage(Item item)
         {
-            if (item.SaleInfo.Equals(TrashSaleInfo))
-            {
-                return false;
-            }
-
-            if (!item.Sellers.Any())
+            if (item.Sellers.Count == 0 || item.SaleInfo.Equals(TrashSaleInfo))
             {
                 return false;
             }

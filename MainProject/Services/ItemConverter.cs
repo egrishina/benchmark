@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-
 using MainProject.Contracts.Entities;
 using MainProject.Contracts.Entities.ValueObjects;
 using MainProject.Contracts.Externals;
@@ -9,44 +8,50 @@ namespace MainProject.Services
 {
     internal sealed class ItemConverter
     {
-        public Item[] ConvertItems(IEnumerable<ItemDto> dtoItems)
+        public Item[] ConvertItems(List<ItemDto> dtoItems)
         {
-            var items = new List<Item>();
+            var items = new Item[dtoItems.Count];
 
-            foreach (ItemDto itemDto in dtoItems)
+            for (int i = 0; i < dtoItems.Count; i++)
             {
+                var sellers = new List<Seller>(dtoItems[i].SellerIds.Length);
+                for (int j = 0; j < dtoItems[i].SellerIds.Length; j++)
+                {
+                    sellers.Add(new Seller(dtoItems[i].SellerIds[j], string.Empty));
+                }
+                
                 var item = new Item
                 {
-                    Id = itemDto.Id,
+                    Id = dtoItems[i].Id,
                     Price = new Price
                     {
-                        Currency = itemDto.PriceCurrency,
-                        Value = itemDto.PriceValue
+                        Currency = dtoItems[i].PriceCurrency,
+                        Value = dtoItems[i].PriceValue
                     },
-                    Sellers = itemDto.SellerIds.Select(s => new Seller { Id = s }).ToList(),
+                    Sellers = sellers,
                     VolumeWeight = new VolumeWeightData
                     {
-                        Height = itemDto.Height,
-                        Length = itemDto.Length,
-                        Weight = itemDto.Weight,
-                        Width = itemDto.Width,
-                        PackagedHeight = itemDto.PackagedHeight,
-                        PackagedLength = itemDto.PackagedLength,
-                        PackagedWeight = itemDto.PackagedWeight,
-                        PackagedWidth = itemDto.PackagedWidth
+                        Height = dtoItems[i].Height,
+                        Length = dtoItems[i].Length,
+                        Weight = dtoItems[i].Weight,
+                        Width = dtoItems[i].Width,
+                        PackagedHeight = dtoItems[i].PackagedHeight,
+                        PackagedLength = dtoItems[i].PackagedLength,
+                        PackagedWeight = dtoItems[i].PackagedWeight,
+                        PackagedWidth = dtoItems[i].PackagedWidth
                     },
                     SaleInfo = new SaleInfo
                     {
-                        Rating = itemDto.Rating,
-                        IsActive = itemDto.IsActive,
-                        IsBestSeller = itemDto.IsBestSeller
+                        Rating = dtoItems[i].Rating,
+                        IsActive = dtoItems[i].IsActive,
+                        IsBestSeller = dtoItems[i].IsBestSeller
                     }
                 };
 
-                items.Add(item);
+                items[i] = item;
             }
 
-            return items.ToArray();
+            return items;
         }
     }
 }
