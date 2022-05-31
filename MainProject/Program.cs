@@ -20,7 +20,7 @@ namespace MainProject
         [MemoryDiagnoser]
         public class IntroSetupCleanupGlobal
         {
-            private IEnumerable<ItemDto> _dataFromExternalService;
+            private List<ItemDto> _dataFromExternalService;
 
             private ItemDto GetByIndex(int value)
             {
@@ -60,14 +60,27 @@ namespace MainProject
 
                 Item[] items = converter.ConvertItems(_dataFromExternalService);
 
-                Dictionary<SizeType, List<Item>> itemsBySize = items
-                    .GroupBy(i => ItemSizeManager.GetSizeType(i.VolumeWeight))
-                    .ToDictionary(i => i.Key, i => i.ToList());
+                var itemsBySize = new Dictionary<SizeType, List<Item>>();
+                var itemsForMainPage = new List<Item>();
+                for (int i = 0; i < items.Length; i++)
+                {
+                    var sizeType = ItemSizeManager.GetSizeType(items[i].VolumeWeight);
+                    if (itemsBySize.TryGetValue(sizeType, out var value))
+                    {
+                        value.Add(items[i]);
+                    }
+                    else
+                    {
+                        itemsBySize.Add(sizeType, new List<Item> { items[i] });
+                    }
+                    
+                    if (MainPageManager.IsForMainPage(items[i]))
+                    {
+                        itemsForMainPage.Add(items[i]);
+                    }
+                }
 
                 ItemSaver.SaveBySize(itemsBySize);
-
-                List<Item> itemsForMainPage = items.Where(MainPageManager.IsForMainPage).ToList();
-
                 ItemSaver.SendItemsForMainPage(itemsForMainPage);
             }
         }
